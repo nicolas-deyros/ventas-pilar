@@ -1,78 +1,65 @@
-import * as React from 'react'
-import { Box, Heading, Text, Button, VStack, HStack } from '@chakra-ui/react'
-import { motion, useTransform, useScroll } from 'framer-motion'
+import React, { useState, useRef } from 'react'
+import { motion, useMotionValue } from 'framer-motion'
+import { clampValue, createRange } from '@chakra-ui/utils'
+import { Box } from '@chakra-ui/react'
 
-const images = [
-	'https://via.placeholder.com/768x487',
-	'https://via.placeholder.com/768x487',
-	'https://via.placeholder.com/768x487',
-]
+const Dots = ({ count, active }) => (
+	<Box className='dot-container'>
+		{createRange(count).map((i) => (
+			<motion.div
+				className='dot'
+				initial={false}
+				animate={{
+					scale: active === i ? 1.5 : 1,
+					opacity: active === i ? 1 : 0.5,
+				}}
+				key={i}
+			/>
+		))}
+	</Box>
+)
+
+const Slide = ({ color, ...rest }) => (
+	<Box style={{ backgroundColor: color }} className='slide' {...rest} />
+)
 
 const Hero = () => {
-	const { scrollYProgress } = useScroll()
-	const [currentSlide, setCurrentSlide] = React.useState(0)
+	const constraintsRef = useRef(null)
+	const [active, setActive] = useState(0)
+	const x = useMotionValue(0)
+	const drag = useMotionValue(0)
 
-	const imageIndex = React.useMemo(() => {
-		return Math.floor(currentSlide) % images.length
-	}, [currentSlide])
+	const slides = ['blue', 'green', 'orange'].map((color) => <Slide key={color} color={color} />)
 
-	const x = useTransform(scrollYProgress, [0, 1], [0, -100])
-	const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0])
+	const width = (constraintsRef.current && constraintsRef.current.offsetWidth) || 350
 
-	const handlePreviousSlide = () => {
-		setCurrentSlide(currentSlide - 1)
-	}
-
-	const handleNextSlide = () => {
-		setCurrentSlide(currentSlide + 1)
+	const dragEndHandler = (event, info) => {
+		const offset = info.offset.x
+		if (Math.abs(offset) > 20) {
+			const direction = offset < 0 ? 1 : -1
+			setActive((active) => clampValue(active + direction, 0, slides.length - 1))
+		}
 	}
 
 	return (
-		<Box position='relative' height='100vh' overflow='hidden'>
-			<motion.div
-				style={{ x, opacity }}
-				position='absolute'
-				top={0}
-				left={0}
-				right={0}
-				bottom={0}
-				backgroundImage={`url(${images[imageIndex]})`}
-				backgroundSize='cover'
-			/>
+		<>
+			<Box className='container' ref={constraintsRef}>
+				<motion.div
+					className='swipper'
+					onDragEnd={dragEndHandler}
+					dragConstraints={constraintsRef}
+					drag='x'
+					className='slider'
+					animate={{
+						x: -1 * active * width,
+					}}>
+					{slides}
+				</motion.div>
 
-			<Box
-				position='absolute'
-				top={0}
-				left={0}
-				right={0}
-				bottom={0}
-				bgGradient='linear(to-t, rgba(0,0,0,0.7), transparent)'
-			/>
-
-			<Box position='absolute' top='50%' left='50%' transform='translate(-50%, -50%)'>
-				<VStack spacing={8} alignItems='center'>
-					<Heading
-						color='white'
-						fontSize={{ base: '4xl', md: '6xl' }}
-						fontWeight='bold'
-						textAlign='center'>
-						Welcome to our store!
-					</Heading>
-					<Text color='white' fontSize={{ base: 'xl', md: '2xl' }} textAlign='center'>
-						Shop our latest collection of products.
-					</Text>
-
-					<HStack spacing={8}>
-						<Button variant='outline' colorScheme='whiteAlpha' onClick={handlePreviousSlide}>
-							Previous
-						</Button>
-						<Button variant='outline' colorScheme='whiteAlpha' onClick={handleNextSlide}>
-							Next
-						</Button>
-					</HStack>
-				</VStack>
+				<Dots count={slides.length} active={active} />
 			</Box>
-		</Box>
+			<Box style={{ height: 700 }} />
+		</>
 	)
 }
 

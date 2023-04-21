@@ -9,9 +9,9 @@ function App({ children }) {
 	return (
 		<Wrapper>
 			<Routes>
-				<Route path='*' element={<Home />} />
+				<Route path='/' element={<Home />} />
 				<Route path='/contact' element={<Contact />} />
-				{/* <Route path='/product/:id' component={<ProductDetail />} /> */}
+				<Route path='/product/:id' element={<ProductDetail />} />
 			</Routes>
 			{children}
 		</Wrapper>

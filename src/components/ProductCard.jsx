@@ -19,7 +19,9 @@ const ProductCard = ({ product }) => {
 					{description}
 				</Text>
 				<Button mt='4' colorScheme='teal' variant='solid'>
-					<Link href={id}>Ver Producto</Link>
+					<Link href={`/product/${id}`} product={product}>
+						Ver Producto
+					</Link>
 				</Button>
 			</Box>
 		</Box>
