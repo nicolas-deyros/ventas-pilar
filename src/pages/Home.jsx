@@ -5,9 +5,7 @@ import ProductsGrid from '../components/ProductsGrid'
 const HomePage = () => {
 	return (
 		<>
-			<section>
-				<Hero />
-			</section>
+			{/* <section>{<Hero />}</section> */}
 			<section>
 				<ProductsGrid />
 			</section>

@@ -1,65 +1,64 @@
-import React, { useState, useRef } from 'react'
-import { motion, useMotionValue } from 'framer-motion'
-import { clampValue, createRange } from '@chakra-ui/utils'
+import React, { useState } from 'react'
+import { motion } from 'framer-motion'
 import { Box } from '@chakra-ui/react'
 
-const Dots = ({ count, active }) => (
-	<Box className='dot-container'>
-		{createRange(count).map((i) => (
-			<motion.div
-				className='dot'
-				initial={false}
-				animate={{
-					scale: active === i ? 1.5 : 1,
-					opacity: active === i ? 1 : 0.5,
-				}}
-				key={i}
-			/>
-		))}
-	</Box>
-)
-
-const Slide = ({ color, ...rest }) => (
-	<Box style={{ backgroundColor: color }} className='slide' {...rest} />
-)
+const images = [
+	'https://images.unsplash.com/photo-1604537529428-15bcbeecfe4d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1469&q=80',
+	'https://cdn.pixabay.com/photo/2023/03/29/08/19/tulips-7884877_960_720.jpg',
+]
 
 const Hero = () => {
-	const constraintsRef = useRef(null)
-	const [active, setActive] = useState(0)
-	const x = useMotionValue(0)
-	const drag = useMotionValue(0)
+	const [activeSlide, setActiveSlide] = useState(0)
 
-	const slides = ['blue', 'green', 'orange'].map((color) => <Slide key={color} color={color} />)
+	const handlePrev = () => {
+		setActiveSlide(activeSlide === 0 ? images.length - 1 : activeSlide - 1)
+	}
 
-	const width = (constraintsRef.current && constraintsRef.current.offsetWidth) || 350
-
-	const dragEndHandler = (event, info) => {
-		const offset = info.offset.x
-		if (Math.abs(offset) > 20) {
-			const direction = offset < 0 ? 1 : -1
-			setActive((active) => clampValue(active + direction, 0, slides.length - 1))
-		}
+	const handleNext = () => {
+		setActiveSlide(activeSlide === images.length - 1 ? 0 : activeSlide + 1)
 	}
 
 	return (
-		<>
-			<Box className='container' ref={constraintsRef}>
-				<motion.div
-					className='swipper'
-					onDragEnd={dragEndHandler}
-					dragConstraints={constraintsRef}
-					drag='x'
-					className='slider'
-					animate={{
-						x: -1 * active * width,
-					}}>
-					{slides}
-				</motion.div>
-
-				<Dots count={slides.length} active={active} />
+		<Box position='relative' my={3}>
+			<Box
+				display='flex'
+				transform={`translateX(-${activeSlide * 100}%)`}
+				transition='transform 0.5s ease-in-out'>
+				{images.map((image, index) => (
+					<Box
+						key={index}
+						flexShrink='0'
+						width='100%'
+						height={['250px', '400px']}
+						background={`url(${image})`}
+						backgroundSize='cover'
+					/>
+				))}
 			</Box>
-			<Box style={{ height: 700 }} />
-		</>
+			<Box position='absolute' top='50%' left='2' transform='translateY(-50%)'>
+				<motion.button
+					onClick={handlePrev}
+					whileHover={{ scale: 1.2 }}
+					whileTap={{ scale: 0.9 }}
+					p='2'
+					bg='whiteAlpha.200'
+					color='white'
+					borderRadius='50%'
+					mr='4'>
+					&#8249;
+				</motion.button>
+				<motion.button
+					onClick={handleNext}
+					whileHover={{ scale: 1.2 }}
+					whileTap={{ scale: 0.9 }}
+					p='2'
+					bg='whiteAlpha.200'
+					color='white'
+					borderRadius='50%'>
+					&#8250;
+				</motion.button>
+			</Box>
+		</Box>
 	)
 }
 
